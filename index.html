@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ALGO.SORT</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <div id="error-log" style="color:red; background:white; position:absolute; z-index:9999;"></div>
+    <script>
+      window.onerror = function(msg, src, lineno, colno, error) {
+        document.getElementById('error-log').innerHTML += msg + '<br>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        document.getElementById('error-log').innerHTML += e.reason + '<br>';
+      });
+    </script>
+    <div id="game-container"></div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

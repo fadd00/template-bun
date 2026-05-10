@@ -37,3 +37,7 @@ Berikut adalah catatan pekerjaan yang telah diselesaikan untuk iterasi prototipe
 ## 5. Hotfix & Perbaikan Bug
 - **`src/game/scenes/GameScene.ts`**:
   - Memperbaiki konflik *namespace* global `Phaser` pada *module bundler* (Vite/Bun) yang menyebabkan `Uncaught ReferenceError: Phaser is not defined`. Impor library telah diubah menjadi secara spesifik (mendeklarasikan `Geom`, `Math as PhaserMath`, dll secara eksplisit) sehingga game dapat kembali _render_ dengan mulus.
+## 6. Peningkatan UI/UX: Scroll & Single Entity Block
+- **`src/game/scenes/GameScene.ts`**:
+  - **Single Entity Block**: Mengubah mekanik dari kloning blok tanpa batas menjadi memindahkan satu entitas yang sama (mengambil dari pallet akan menghilangkan blok dari pallet, jika ditempatkan di luar workspace atau ditekan tombol *Reset*, maka akan otomatis dikembalikan ke pallet).
+  - **Area Scroll**: Mengimplementasikan *geometry mask* dan pendeteksi *event wheel pointer* untuk menambahkan kemampuan *scroll* (menggulir) area *Pallet* maupun *Workspace* yang terisolasi sendiri-sendiri, sehingga saat balok yang ada memanjang melampaui layar, pemain tinggal men-*scroll* ke atas/bawah untuk melihat bagian sisanya.

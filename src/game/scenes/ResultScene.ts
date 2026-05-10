@@ -1,86 +1,102 @@
 import { Scene } from 'phaser';
+import { LEVELS } from './levels';
 
 export class ResultScene extends Scene {
     constructor() {
         super('ResultScene');
     }
 
-    init(data: { success: boolean; nextLevel: number | null; levelTitle: string }) {
+    init(data: { level: number; score: number; success: boolean; lives: number; message: string }) {
         this.data.set('payload', data);
     }
 
     create() {
         const { width, height } = this.scale;
         const cx = width / 2;
+        const cy = height / 2;
         const payload = this.data.get('payload') as {
+            level: number;
+            score: number;
             success: boolean;
-            nextLevel: number | null;
-            levelTitle: string;
+            lives: number;
+            message: string;
         };
 
-        this.add.rectangle(0, 0, width, height, 0x0f0f0f).setOrigin(0);
+        const currentLevel = LEVELS[payload.level];
 
-        // Subtle grid
-        const bg = this.add.graphics();
-        bg.lineStyle(1, 0x1a1a1a, 1);
-        for (let x = 0; x < width; x += 40) bg.lineBetween(x, 0, x, height);
-        for (let y = 0; y < height; y += 40) bg.lineBetween(0, y, width, y);
+        this.cameras.main.setBackgroundColor('#0D1520');
 
-        if (payload.success) {
-            this.add.text(cx, 160, '✓', {
-                fontFamily: 'monospace', fontSize: '64px', color: '#3a7a3a',
-            }).setOrigin(0.5);
-
-            this.add.text(cx, 250, 'ALGORITHM CORRECT', {
-                fontFamily: 'monospace', fontSize: '24px', color: '#f0f0f0', letterSpacing: 8,
-            }).setOrigin(0.5);
-
-            this.add.text(cx, 295, payload.levelTitle + ' complete.', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#444444', letterSpacing: 3,
-            }).setOrigin(0.5);
-
-            if (payload.nextLevel !== null) {
-                this.makeButton(cx, 380, '[ NEXT LEVEL ]', () => {
-                    this.scene.start('GameScene', { level: payload.nextLevel });
-                });
-            } else {
-                this.add.text(cx, 370, 'all levels complete.', {
-                    fontFamily: 'monospace', fontSize: '14px', color: '#555555', letterSpacing: 3,
-                }).setOrigin(0.5);
-            }
-        } else {
-            this.add.text(cx, 220, '×', {
-                fontFamily: 'monospace', fontSize: '64px', color: '#7a3a3a',
-            }).setOrigin(0.5);
-
-            this.add.text(cx, 300, 'INCORRECT', {
-                fontFamily: 'monospace', fontSize: '24px', color: '#f0f0f0', letterSpacing: 8,
-            }).setOrigin(0.5);
-        }
-
-        this.makeButton(cx, 450, '[ MAIN MENU ]', () => {
-            this.scene.start('MainMenu');
-        }, true);
-    }
-
-    private makeButton(x: number, y: number, label: string, cb: () => void, ghost = false) {
-        const bg = this.add.rectangle(x, y, 200, 44, ghost ? 0x1a1a1a : 0xf0f0f0)
-            .setStrokeStyle(1, ghost ? 0x333333 : 0x000000)
-            .setInteractive({ useHandCursor: true });
-
-        this.add.text(x, y, label, {
-            fontFamily: 'monospace',
-            fontSize: '14px',
-            color: ghost ? '#555555' : '#0f0f0f',
-            letterSpacing: 4,
+        // Score Text
+        this.add.text(cx, 100, payload.success ? "BERHASIL!" : "GAGAL", {
+            fontSize: '48px',
+            fontStyle: 'bold',
+            color: payload.success ? '#2ECC71' : '#E74C3C'
         }).setOrigin(0.5);
 
-        bg.on('pointerover', () => {
-            bg.setFillStyle(ghost ? 0x2a2a2a : 0xcccccc);
-        });
-        bg.on('pointerout', () => {
-            bg.setFillStyle(ghost ? 0x1a1a1a : 0xf0f0f0);
-        });
-        bg.on('pointerdown', cb);
+        this.add.text(cx, 160, `Skor: ${payload.score}%`, {
+            fontSize: '32px',
+            color: '#fff'
+        }).setOrigin(0.5);
+
+        this.add.text(cx, 210, payload.message, {
+            fontSize: '24px',
+            color: '#aaa',
+            align: 'center',
+            wordWrap: { width: width - 100 }
+        }).setOrigin(0.5);
+
+        // Optional logic for Lives
+        if (currentLevel.hasLives && payload.lives <= 0 && !payload.success) {
+             this.add.text(cx, 260, "GAME OVER! Nyawa Habis.", {
+                 fontSize: '32px',
+                 fontStyle: 'bold',
+                 color: '#E74C3C'
+             }).setOrigin(0.5);
+             
+             this.makeButton(cx, 400, "KEMBALI KE MENU", () => this.scene.start('MainMenu'), 0x3498DB);
+             return;
+        }
+
+        if (currentLevel.hasLives && !payload.success) {
+             this.add.text(cx, 260, `Sisa Nyawa: ${payload.lives}`, {
+                 fontSize: '24px',
+                 color: '#ff4d4d'
+             }).setOrigin(0.5);
+        }
+
+        // Buttons
+        if (payload.success) {
+            const nextIdx = payload.level + 1;
+            if (nextIdx < LEVELS.length) {
+                this.makeButton(cx, 360, "LEVEL SELANJUTNYA", () => this.scene.start('GameScene', { level: nextIdx }), 0x2ECC71);
+            } else {
+                this.add.text(cx, 360, "Selamat! Semua Level Selesai.", { fontSize: '24px', color: '#F1C40F' }).setOrigin(0.5);
+            }
+        } else {
+            this.makeButton(cx, 360, "COBA LAGI", () => this.scene.start('GameScene', { level: payload.level, lives: payload.lives }), 0xE67E22);
+        }
+
+        this.makeButton(cx, 440, "MAIN MENU", () => this.scene.start('MainMenu'), 0x95A5A6);
+    }
+
+    private makeButton(x: number, y: number, label: string, cb: () => void, color: number) {
+        const btn = this.add.container(x, y);
+        const bg = this.add.graphics();
+        bg.fillStyle(color, 1);
+        bg.fillRoundedRect(-150, -25, 300, 50, 8);
+        
+        const txt = this.add.text(0, 0, label, {
+            fontSize: '20px',
+            fontStyle: 'bold',
+            color: '#fff'
+        }).setOrigin(0.5);
+
+        btn.add([bg, txt]);
+        btn.setSize(300, 50);
+        btn.setInteractive({ useHandCursor: true });
+        
+        bg.on('pointerover', () => { bg.setAlpha(0.8); });
+        bg.on('pointerout', () => { bg.setAlpha(1); });
+        btn.on('pointerdown', cb);
     }
 }

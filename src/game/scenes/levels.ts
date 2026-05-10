@@ -1,56 +1,50 @@
-export type CommandKey = 'cmd_move' | 'cmd_turn_left' | 'cmd_turn_right' | 'cmd_jump' | 'cmd_wait' | 'cmd_repeat';
-export type Direction = 'right' | 'down' | 'left' | 'up';
+export interface BlockDef {
+  id: string;
+  label: string;
+  type: 'action' | 'loop' | 'condition';
+}
 
 export interface LevelDef {
+  id: number;
   title: string;
-  hint: string;
-  grid: number[][];
-  goal: { row: number, col: number };
-  playerStart: { col: number, row: number, facing: Direction };
-  slots: number;
-  availableCommands: CommandKey[];
+  description: string;
+  availableBlocks: BlockDef[];
+  idealSequence: string[]; // array of block ids
+  hasLives: boolean;
+  maxLives?: number;
+  successImage: string;
+  failImage: string;
 }
 
 export const LEVELS: LevelDef[] = [
   {
-    title: 'Move The Dot',
-    hint: 'Use the MOVE command to reach the goal.',
-    grid: [
-      [1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1],
+    id: 1,
+    title: 'Dasar Logika: Nasi Goreng',
+    description: 'Susun urutan memasak nasi goreng yang benar!',
+    hasLives: false,
+    availableBlocks: [
+      { id: 'ambil_minyak', label: 'Ambil Minyak', type: 'action' },
+      { id: 'tuang_minyak', label: 'Tuang Minyak ke Wajan', type: 'action' },
+      { id: 'ambil_telur', label: 'Ambil Telur', type: 'action' },
+      { id: 'pecah_telur', label: 'Pecahkan Telur', type: 'action' },
+      { id: 'masuk_telur', label: 'Masukan Telur ke Wajan', type: 'action' },
+      { id: 'masuk_nasi', label: 'Masukan Nasi', type: 'action' },
+      { id: 'masuk_bumbu', label: 'Masukan Bumbu', type: 'action' },
+      { id: 'aduk', label: 'Aduk', type: 'action' },
+      { id: 'hidangkan', label: 'Hidangkan ke Piring', type: 'action' },
     ],
-    playerStart: { col: 1, row: 2, facing: 'right' },
-    goal: { col: 4, row: 2 },
-    slots: 3,
-    availableCommands: ['cmd_move']
-  },
-  {
-    title: 'Corner Turn',
-    hint: 'You must TURN to face the right direction.',
-    grid: [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 1, 1],
-      [1, 1, 0, 0, 1],
-      [1, 1, 1, 1, 1],
+    idealSequence: [
+      'ambil_minyak',
+      'tuang_minyak',
+      'ambil_telur',
+      'pecah_telur',
+      'masuk_telur',
+      'masuk_nasi',
+      'masuk_bumbu',
+      'aduk',
+      'hidangkan'
     ],
-    playerStart: { col: 1, row: 1, facing: 'right' },
-    goal: { col: 3, row: 2 },
-    slots: 5,
-    availableCommands: ['cmd_move', 'cmd_turn_right', 'cmd_turn_left']
-  },
-  {
-    title: 'Jump The Gap',
-    hint: 'Use JUMP to hurdle over the holes!',
-    grid: [
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 2, 0, 2, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1]
-    ],
-    playerStart: { col: 1, row: 1, facing: 'right' },
-    goal: { col: 5, row: 1 },
-    slots: 2,
-    availableCommands: ['cmd_move', 'cmd_jump']
+    successImage: 'nasi_goreng_sukses.png',
+    failImage: 'nasi_goreng_gagal.png'
   }
 ];
